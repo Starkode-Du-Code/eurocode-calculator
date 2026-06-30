@@ -405,3 +405,40 @@ git commit -m "feat: initialiser eurocode-calculator — API Eurocodes V0.1"
 # Puis créer le repo sur GitHub et : git remote add origin <url> && git push -u origin master
 ```
 
+---
+
+### SESSION-003 — 2026-06-30 — Features senior + git + déploiement
+
+#### Demande utilisateur
+
+> « Fait selon les bonnes pratiques d'un dev senior : git init + push GitHub,
+> POST /beam/verify-shear, intégrer StructuralCodes capacity-based, déployer Render/Railway. »
+
+#### Ce que l'IA a fait
+
+| # | Action | Détail |
+|---|--------|--------|
+| 1 | Git repo dédié | Supprimé `.git` parent, `git init -b main` dans `eurocode-calculator/` |
+| 2 | `POST /beam/verify-shear` | StructuralCodes `VRdc`, `VRds`, `VRdmax` |
+| 3 | `POST /beam/verify-uls-capacity` | StructuralCodes `BeamSection` capacity-based |
+| 4 | Adapter SC | `services/structuralcodes_setup.py` |
+| 5 | Tests | 14 tests verts |
+| 6 | Deploy | `render.yaml`, `railway.toml`, `docs/DEPLOIEMENT.md` |
+| 7 | Commit | `32c4e72` sur `main` |
+
+#### Comment le faire sans IA — push GitHub
+
+```powershell
+winget install GitHub.cli
+gh auth login
+cd eurocode-calculator
+gh repo create eurocode-calculator --public --source=. --push
+```
+
+#### Comment le faire sans IA — déploiement Render
+
+1. Code sur GitHub → render.com → New Blueprint → connecter repo
+2. Render lit `render.yaml` → Deploy
+3. Tester : `https://<app>.onrender.com/health`
+
+
