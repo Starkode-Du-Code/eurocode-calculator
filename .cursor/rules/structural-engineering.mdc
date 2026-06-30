@@ -1,0 +1,27 @@
+---
+description: Règles ingénierie structurelle Eurocodes
+globs: "src/eurocode_calculator/services/**"
+alwaysApply: false
+---
+
+# Calculs structurels
+
+## Principes
+
+- Toujours documenter les hypothèses simplificatrices dans la docstring
+- Référencer la clause Eurocode (ex: EN 1992-1-1 §6.1)
+- Utiliser eurocodepy pour les matériaux et propriétés de section
+- StructuralCodes pour les vérifications capacity-based avancées
+- Retourner un `utilization_ratio` (M_Ed/M_Rd ou N_Ed/N_Rd) dans chaque réponse
+
+## Notation
+
+Respecter la notation Eurocode dans les noms de champs API :
+- `fck`, `fcd`, `fy`, `gamma_c`, `gamma_m0`
+- `moment_ed_knm`, `moment_rd_knm`
+- `utilization_ratio` (pas "safety_factor")
+
+## Validation
+
+Chaque calcul doit être vérifiable contre une solution analytique manuelle.
+Ajouter le cas de référence dans les tests avec les valeurs attendues.

@@ -1,0 +1,34 @@
+---
+description: Conventions Python pour eurocode-calculator
+globs: "**/*.py"
+alwaysApply: false
+---
+
+# Standards Python
+
+## Style
+
+- Ruff pour lint et format (line-length 100)
+- Imports triés : stdlib → third-party → local
+- Docstrings Google style sur les fonctions publiques des services
+
+## Patterns
+
+```python
+# ✅ Service avec type hints et docstring
+def verify_beam_uls(request: BeamVerifyULSRequest) -> BeamVerifyULSResponse:
+    """Vérification ULS — EN 1992-1-1."""
+    concrete = ec.Concrete(request.concrete_grade)
+    ...
+
+# ❌ Logique dans le router
+@router.post("/verify-uls")
+def post_verify_uls(request):
+    concrete = ec.Concrete(...)  # NON — mettre dans services/
+```
+
+## Tests
+
+- Utiliser `client` fixture de conftest.py
+- Tester cas OK, cas FAIL, et validation 422
+- Nommer : `test_<endpoint>_<scenario>`

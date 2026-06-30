@@ -1,0 +1,27 @@
+---
+description: Standards fondamentaux du projet eurocode-calculator
+alwaysApply: true
+---
+
+# Projet eurocode-calculator
+
+API REST Python de vérification structurelle Eurocodes (EC2, EC3, EC7).
+
+## Architecture
+
+- Routers minces → Services avec logique Eurocode → Schemas Pydantic
+- Code en anglais, documentation utilisateur en français
+- Python 3.12+, type hints obligatoires
+
+## Avant chaque session
+
+1. Lire `docs/02-HANDOFF-IA.md`
+2. Lire `AGENTS.md` pour le contexte complet
+
+## Après chaque session
+
+Mettre à jour `docs/02-HANDOFF-IA.md` avec le relevé de session.
+
+## Tests obligatoires
+
+Tout nouveau service doit avoir des tests dans `tests/`. Lancer `pytest` avant de terminer.

@@ -1,0 +1,17 @@
+# Render.com — déploiement web service (gratuit)
+# https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: eurocode-calculator
+    runtime: python
+    plan: free
+    branch: main
+    buildCommand: pip install -e .
+    startCommand: uvicorn eurocode_calculator.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.13.0"
+      - key: DEBUG
+        value: "false"
