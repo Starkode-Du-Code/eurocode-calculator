@@ -34,9 +34,10 @@ def verify_beam_capacity(request: BeamVerifyCapacityRequest) -> BeamVerifyCapaci
     verified = utilization <= 1.0
 
     if verified:
+        bars = f"{request.bottom_bar_count}Ø{request.bottom_bar_diameter_mm:.0f}"
         message = (
             f"Flexion capacity-based OK — M_Ed={request.moment_knm:.1f} kN·m ≤ "
-            f"M_Rd={moment_rd_knm:.1f} kN·m ({request.bottom_bar_count}Ø{request.bottom_bar_diameter_mm:.0f})"
+            f"M_Rd={moment_rd_knm:.1f} kN·m ({bars})"
         )
     else:
         message = (

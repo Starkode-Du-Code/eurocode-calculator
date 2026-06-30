@@ -43,7 +43,9 @@ def verify_column_buckling(request: ColumnBucklingRequest) -> ColumnBucklingResp
     n_pl_rd = area * fyk / (request.gamma_m0 * 1000)  # kN
     buckling_resistance = chi * n_pl_rd
 
-    utilization = request.axial_force_kn / buckling_resistance if buckling_resistance > 0 else float("inf")
+    utilization = (
+        request.axial_force_kn / buckling_resistance if buckling_resistance > 0 else float("inf")
+    )
     verified = utilization <= 1.0
 
     if verified:

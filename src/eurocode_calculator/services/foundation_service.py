@@ -33,7 +33,10 @@ def verify_foundation_bearing(request: FoundationBearingRequest) -> FoundationBe
     verified = utilization <= 1.0
 
     if verified:
-        message = f"Portance OK — σ_Ed={applied_pressure:.0f} kPa ≤ σ_Rd={bearing_resistance:.0f} kPa"
+        message = (
+            f"Portance OK — σ_Ed={applied_pressure:.0f} kPa ≤ "
+            f"σ_Rd={bearing_resistance:.0f} kPa"
+        )
     else:
         message = (
             f"Portance insuffisante — σ_Ed={applied_pressure:.0f} kPa > "

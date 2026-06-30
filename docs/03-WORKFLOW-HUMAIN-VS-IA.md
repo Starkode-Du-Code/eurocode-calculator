@@ -428,11 +428,17 @@ git commit -m "feat: initialiser eurocode-calculator — API Eurocodes V0.1"
 
 #### Comment le faire sans IA — push GitHub
 
+`gh` est dans `C:\Program Files\GitHub CLI\` — si `gh` n'est pas reconnu, le PATH
+n'a pas été rechargé après `winget install`. **Fermer et rouvrir le terminal**, ou :
+
 ```powershell
-winget install GitHub.cli
-gh auth login
+# Script helper (recommandé)
 cd eurocode-calculator
-gh repo create eurocode-calculator --public --source=. --push
+.\scripts\github-setup.ps1
+
+# OU chemin complet
+& "C:\Program Files\GitHub CLI\gh.exe" auth login
+& "C:\Program Files\GitHub CLI\gh.exe" repo create eurocode-calculator --public --source=. --push
 ```
 
 #### Comment le faire sans IA — déploiement Render

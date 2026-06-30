@@ -13,7 +13,11 @@ class FoundationBearingRequest(BaseModel):
     )
     foundation_width_m: float = Field(gt=0, description="Largeur de la semelle B [m]")
     foundation_length_m: float = Field(gt=0, description="Longueur de la semelle L [m]")
-    embedment_depth_m: float = Field(default=0.0, ge=0, description="Profondeur d'encastrement D_f [m]")
+    embedment_depth_m: float = Field(
+        default=0.0,
+        ge=0,
+        description="Profondeur d'encastrement D_f [m]",
+    )
     vertical_load_kn: float = Field(gt=0, description="Charge verticale de calcul V_Ed [kN]")
     gamma_ground: float = Field(default=18.0, gt=0, description="Poids volumique du sol [kN/m³]")
     gamma_r: float = Field(default=1.25, gt=0, description="Coefficient partiel résistance γ_r")

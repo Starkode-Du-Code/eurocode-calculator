@@ -43,13 +43,20 @@ class BeamVerifyShearRequest(BaseModel):
     height_mm: float = Field(gt=0, description="Hauteur totale h [mm]")
     cover_mm: float = Field(default=30, ge=0, description="Enrobage nominal [mm]")
     shear_force_kn: float = Field(gt=0, description="Effort tranchant de calcul V_Ed [kN]")
-    axial_force_kn: float = Field(default=0.0, description="Effort normal N_Ed [kN] (positif = compression)")
+    axial_force_kn: float = Field(
+        default=0.0,
+        description="Effort normal N_Ed [kN] (positif = compression)",
+    )
     longitudinal_steel_area_mm2: float = Field(
         default=0.0,
         ge=0,
         description="Aire acier longitudinal tendu A_sl [mm²]",
     )
-    stirrup_area_mm2: float = Field(default=0.0, ge=0, description="A_sw — aire brins étriers sur une jambe [mm²]")
+    stirrup_area_mm2: float = Field(
+        default=0.0,
+        ge=0,
+        description="A_sw — aire brins étriers sur une jambe [mm²]",
+    )
     stirrup_spacing_mm: float = Field(default=0.0, ge=0, description="Entraxe étriers s [mm]")
     steel_fyk_mpa: float = Field(default=500.0, gt=0, description="f_yk acier [MPa]")
     gamma_c: float = Field(default=1.5, gt=0)
@@ -80,7 +87,11 @@ class BeamVerifyCapacityRequest(BaseModel):
     height_mm: float = Field(gt=0)
     cover_mm: float = Field(default=30, ge=0)
     moment_knm: float = Field(description="Moment de calcul M_Ed [kN·m]")
-    bottom_bar_diameter_mm: float = Field(default=16, gt=0, description="Diamètre barres inférieures [mm]")
+    bottom_bar_diameter_mm: float = Field(
+        default=16,
+        gt=0,
+        description="Diamètre barres inférieures [mm]",
+    )
     bottom_bar_count: int = Field(default=3, ge=1, description="Nombre de barres inférieures")
     steel_fyk_mpa: float = Field(default=500.0, gt=0)
 

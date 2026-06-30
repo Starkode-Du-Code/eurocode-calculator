@@ -18,7 +18,6 @@ def verify_beam_uls(request: BeamVerifyULSRequest) -> BeamVerifyULSResponse:
     fck = concrete.fck
     fcd = fck / request.gamma_c
 
-    b_m = request.width_mm / 1000
     h_m = request.height_mm / 1000
     d_m = h_m - request.cover_mm / 1000 - 0.01  # enrobage + est. diamètre barre
 

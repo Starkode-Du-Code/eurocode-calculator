@@ -35,6 +35,7 @@
 |---------|------|-------|
 | [SESSION-001](sessions/SESSION-001-init.md) | 2026-06-30 | Initialisation du projet |
 | [SESSION-002](sessions/SESSION-002-git-lancement.md) | 2026-06-30 | Git init + premier lancement API |
+| [SESSION-003](sessions/SESSION-003-features-deploy.md) | 2026-06-30 | StructuralCodes, shear, deploy |
 
 ## Comment utiliser cette doc avec l'IA
 
