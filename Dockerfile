@@ -1,12 +1,15 @@
 # syntax=docker/dockerfile:1
 FROM python:3.12-slim-bookworm AS builder
 
-# Outils de build minimaux pour les extensions C/Fortran (numpy, scipy, structuralcodes)
+# Outils COMPLETS pour compiler triangle + autres libs C/Fortran
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     g++ \
     gfortran \
-    libopenblas-dev \
+    libblas-dev \
+    liblapack-dev \
+    libgl1 \
+    libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -18,17 +21,18 @@ RUN pip install --no-cache-dir uv
 COPY pyproject.toml README.md ./
 COPY src/ src/
 
-# Installer avec uv (ignore les extras "dev" et "eurocode")
+# Installer TOUTES les dépendances core (eurocodepy + structuralcodes INCLUS)
 RUN uv pip install --system --no-cache-dir -e .
 
 # Image finale — plus légère
 FROM python:3.12-slim-bookworm
 
-# Librairies runtime minimales si besoin plus tard
+# Librairies runtime minimales
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libgl1 \
     libglib2.0-0 \
-    libopenblas0 \
+    libblas3 \
+    liblapack3 \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

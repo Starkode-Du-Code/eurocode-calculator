@@ -27,8 +27,9 @@
 | Serveur ASGI | Uvicorn | `[standard]>=0.32.0` |
 | Validation données | Pydantic v2 | `>=2.10.0` |
 | Configuration | pydantic-settings | `>=2.6.0` |
-| Calculs Eurocode (interne) | `src/eurocode_calculator/core` | EC2 béton, EC3 acier/profilés, matériaux |
+| Calculs Eurocode | eurocodepy | `>=2026.4.1` (matériaux, profilés, sols) |
 | Calculs capacity-based | structuralcodes | `>=0.6.0` (EC2 cisaillement, flexion avec armatures) |
+| Fallback / vérification analytique | `src/eurocode_calculator/core` | EC2 béton, EC3 acier/profilés, matériaux |
 | Tests | pytest + httpx + pytest-cov | `>=8.3.0` |
 | Lint / format | Ruff | `>=0.8.0`, line-length 120, cible py312 |
 | CI/CD | GitHub Actions | `.github/workflows/ci.yml` |
@@ -36,7 +37,7 @@
 | Conteneur | Docker | `python:3.12-slim-bookworm` |
 | Déploiement | Render (recommandé), Railway, Docker | fichiers `render.yaml`, `railway.toml`, `Dockerfile` |
 
-**Remarque sur les dépendances** : `eurocodepy` a été retiré des dépendances core pour éviter les frictions de build au déploiement. Il reste disponible en extra optionnel (`pip install -e ".[eurocode]"`) pour tests ou référence. Les calculs Eurocodes de base (matériaux, flexion simplifiée EC2, flambement EC3) sont implémentés dans le module interne `src/eurocode_calculator/core`.
+**Remarque sur les dépendances** : `eurocodepy` et `structuralcodes` sont en dépendances core. `eurocodepy` dépend de `triangle` qui peut nécessiter une compilation C/Fortran lors du build Docker ; le Dockerfile multi-stage installe donc `gcc`, `g++`, `gfortran`, `libblas-dev`, `liblapack-dev` pour garantir le build. En complément, le module interne `core` et l'adapter `services/materials_adapter.py` fournissent un fallback robuste si `eurocodepy` venait à ne pas être installable dans un environnement donné.
 
 ---
 
@@ -54,13 +55,14 @@ src/eurocode_calculator/
 │   ├── column.py
 │   └── foundation.py
 ├── services/                # Logique métier Eurocode
-│   ├── beam_service.py              # POST /beam/verify-uls (core EC2, simplifié)
+│   ├── beam_service.py              # POST /beam/verify-uls (eurocodepy + core fallback)
 │   ├── beam_shear_service.py        # POST /beam/verify-shear (structuralcodes)
 │   ├── beam_capacity_service.py     # POST /beam/verify-uls-capacity (structuralcodes)
-│   ├── column_service.py            # POST /column/buckling (core EC3 + formule analytique)
+│   ├── column_service.py            # POST /column/buckling (eurocodepy fyk + formule EC3)
 │   ├── foundation_service.py        # POST /foundation/bearing (données typiques EC7)
+│   ├── materials_adapter.py         # Adapter eurocodepy principal / core fallback
 │   └── structuralcodes_setup.py     # Helpers EC2 capacity-based
-├── core/                    # Calculs Eurocodes internes (sans eurocodepy)
+├── core/                    # Calculs Eurocodes internes (fallback + vérification analytique)
 │   ├── materials.py
 │   ├── ec2_concrete.py
 │   └── ec3_steel.py
@@ -192,8 +194,9 @@ docker run -p 8000:8000 eurocode-calculator
 
 - Documenter les hypothèses simplificatrices dans la docstring.
 - Retourner systématiquement un `utilization_ratio` (`M_Ed/M_Rd`, `N_Ed/N_Rd`, `σ_Ed/σ_Rd`).
-- Utiliser le module interne `core` pour les matériaux, catalogues et calculs analytiques EC2/EC3.
+- Utiliser `eurocodepy` pour les propriétés matériaux (principal).
 - Utiliser `structuralcodes` pour les vérifications capacity-based avancées.
+- Utiliser le module interne `core` comme fallback robuste et comme référence analytique pour valider les résultats.
 - Chaque calcul doit être vérifiable contre une solution analytique manuelle ; ajouter le cas de référence dans les tests avec les valeurs attendues.
 
 ---
@@ -306,7 +309,7 @@ Le répertoire `.cursor/` contient des règles et skills utilisés par Cursor (e
 
 | Route | Norme | Statut | Implémentation |
 |-------|-------|--------|----------------|
-| `POST /beam/verify-uls` | EC2 | ✅ | `beam_service.py` (core EC2, simplifié) |
+| `POST /beam/verify-uls` | EC2 | ✅ | `beam_service.py` (eurocodepy + core fallback) |
 | `POST /beam/verify-shear` | EC2 §6.2 | ✅ | `beam_shear_service.py` (structuralcodes) |
 | `POST /beam/verify-uls-capacity` | EC2 | ✅ | `beam_capacity_service.py` (structuralcodes) |
 | `POST /column/buckling` | EC3-1-1 §6.3 | ✅ | `column_service.py` |
@@ -325,7 +328,7 @@ Le répertoire `.cursor/` contient des règles et skills utilisés par Cursor (e
 - **Pas d'authentification** en V0.1. C'est acceptable pour un portfolio / POC, mais doit être ajoutée avant toute mise en production réelle.
 - **Pas de secrets dans le code** : les variables sensibles vont dans `.env` (gitignoré). Utiliser `.env.example` comme modèle.
 - **Calculs à usage informatif** : les vérifications actuelles sont simplifiées et ne remplacent pas un logiciel de calcul structurel certifié. Toute simplification doit être documentée dans la docstring du service concerné.
-- **Dépendances** : `structuralcodes` évolue rapidement ; penser à pinner la version si un comportement de calcul capacity-based devient critique. Le module interne `core` est maîtrisé et ne dépend pas d'une lib externe.
+- **Dépendances** : `eurocodepy` et `structuralcodes` évoluent rapidement. Pinner les versions si un comportement de calcul devient critique. Le Dockerfile multi-stage compile `triangle` via les deps de build ; si un cloud refuse la compilation, l'adapter `materials_adapter.py` bascule automatiquement sur le module interne `core`.
 
 ---
 
