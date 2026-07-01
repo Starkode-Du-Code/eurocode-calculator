@@ -5,7 +5,7 @@ from fastapi import FastAPI
 
 from eurocode_calculator import __version__
 from eurocode_calculator.config import settings
-from eurocode_calculator.routers import beam_router, column_router, foundation_router
+from eurocode_calculator.routers import beam_router, column_router, foundation_router, report_router
 
 
 def create_app() -> FastAPI:
@@ -23,6 +23,7 @@ def create_app() -> FastAPI:
     app.include_router(beam_router)
     app.include_router(column_router)
     app.include_router(foundation_router)
+    app.include_router(report_router)
 
     @app.get("/health", tags=["Système"])
     def health():
@@ -39,6 +40,7 @@ def create_app() -> FastAPI:
                 "beam_uls_capacity": "POST /beam/verify-uls-capacity",
                 "column_buckling": "POST /column/buckling",
                 "foundation_bearing": "POST /foundation/bearing",
+                "report_generate": "POST /report/generate",
             },
         }
 
