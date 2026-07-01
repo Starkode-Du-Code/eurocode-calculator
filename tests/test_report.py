@@ -2,7 +2,7 @@
 
 import pytest
 
-from eurocode_calculator.services.pdf_generator import generate_report
+from eurocode_calculator.services.pdf_generator import generate_moment_diagram, generate_report
 
 
 @pytest.fixture
@@ -17,6 +17,21 @@ def sample_elements():
             "ratio": "0.85",
             "code": "EN 1992-1-1",
             "message": "Le moment résistant est supérieur au moment sollicitant.",
+            "calculations": [
+                {"label": "Charge", "formula": "q = g + q", "result": "40", "unit": "kN/m"},
+            ],
+            "checks": [
+                {
+                    "name": "Flexion",
+                    "formula": "MEd ≤ MRd",
+                    "result": "150 ≤ 200",
+                    "ratio": "0.75",
+                    "status": "OK",
+                },
+            ],
+            "diagrams": [
+                {"L": 6.0, "q": 40.0, "M_Ed": 150.0, "caption": "Moment ELU"},
+            ],
         },
         {
             "type": "Poteau",
@@ -24,7 +39,7 @@ def sample_elements():
             "inputs": {"Ned": "1500 kN", "My": "120 kN.m"},
             "status": "fail",
             "result": "Non vérifié",
-            "ratio": "1.12",
+            "ratio": "1,12",
             "code": "EN 1993-1-1",
             "message": "Le ratio dépasse la limite de 1.0.",
         },
@@ -36,7 +51,6 @@ def test_generate_report_creates_pdf(sample_elements):
     assert path.exists()
     assert path.suffix == ".pdf"
     assert path.stat().st_size > 0
-    # Le fichier commence par la signature PDF
     assert path.read_bytes()[:4] == b"%PDF"
 
 
@@ -58,3 +72,18 @@ def test_report_endpoint_empty_elements(client):
 def test_report_endpoint_missing_field(client):
     response = client.post("/report/generate", json={"project_name": "Incomplet"})
     assert response.status_code == 422
+
+
+def test_report_demo_endpoint(client):
+    response = client.post("/report/demo")
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "application/pdf"
+    disposition = response.headers["content-disposition"]
+    assert disposition.startswith('attachment; filename="Rapport_Verification_Poutre_RDC.pdf"')
+    assert response.content[:4] == b"%PDF"
+    assert len(response.content) > 10000  # Le PDF avec diagramme est significativement plus lourd
+
+
+def test_generate_moment_diagram():
+    image = generate_moment_diagram(L=6.0, q=40.0, M_Ed=150.0)
+    assert image.startswith(b"\x89PNG")
