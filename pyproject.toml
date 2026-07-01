@@ -16,7 +16,6 @@ dependencies = [
     "uvicorn[standard]>=0.32.0",
     "pydantic>=2.10.0",
     "pydantic-settings>=2.6.0",
-    "annotated_doc",
     "eurocodepy>=2026.4.1",
     "structuralcodes>=0.6.0",
 ]
