@@ -17,7 +17,6 @@ dependencies = [
     "pydantic>=2.10.0",
     "pydantic-settings>=2.6.0",
     "eurocodepy>=2026.4.1",
-    "structuralcodes>=0.6.0",
 ]
 
 [project.optional-dependencies]
@@ -26,6 +25,10 @@ dev = [
     "pytest-cov>=6.0.0",
     "httpx>=0.28.0",
     "ruff>=0.8.0",
+]
+# Capacity-based design via StructuralCodes — requiert triangle (pas de wheel ARM64)
+capacity = [
+    "structuralcodes>=0.6.0",
 ]
 
 [project.scripts]

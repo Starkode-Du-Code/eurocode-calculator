@@ -2,8 +2,13 @@
 
 import math
 
+from fastapi import HTTPException
+
 from eurocode_calculator.schemas.beam import BeamVerifyCapacityRequest, BeamVerifyCapacityResponse
-from eurocode_calculator.services.structuralcodes_setup import build_rectangular_beam_section
+from eurocode_calculator.services.structuralcodes_setup import (
+    STRUCTURALCODES_AVAILABLE,
+    build_rectangular_beam_section,
+)
 
 
 def verify_beam_capacity(request: BeamVerifyCapacityRequest) -> BeamVerifyCapacityResponse:
@@ -13,6 +18,15 @@ def verify_beam_capacity(request: BeamVerifyCapacityRequest) -> BeamVerifyCapaci
     Utilise BeamSection.calculate_bending_strength() — capacity-based design complet.
     Référence : EN 1992-1-1 via structuralcodes.codes.ec2_2004
     """
+    if not STRUCTURALCODES_AVAILABLE:
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "Capacity-based design indisponible : StructuralCodes n'est pas installé. "
+                "Installez l'extra [capacity] : pip install -e '.[capacity]'"
+            ),
+        )
+
     section = build_rectangular_beam_section(
         width_mm=request.width_mm,
         height_mm=request.height_mm,

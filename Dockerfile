@@ -1,16 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM --platform=linux/amd64 python:3.12-slim-bookworm AS builder
-
-# Outils COMPLETS pour compiler triangle + autres libs C/Fortran
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
-    g++ \
-    gfortran \
-    libblas-dev \
-    liblapack-dev \
-    libgl1 \
-    libglib2.0-0 \
-    && rm -rf /var/lib/apt/lists/*
+FROM python:3.12-slim-bookworm AS builder
 
 WORKDIR /app
 
@@ -18,22 +7,13 @@ WORKDIR /app
 COPY pyproject.toml README.md ./
 COPY src/ src/
 
-# Installer les dépendances avec pip (et non uv) car `triangle` — dépendance d'eurocodepy —
-# n'a pas de wheel précompilée pour toutes les plateformes (ex: Linux ARM64 sur Snap Deploy).
-# pip compile alors triangle depuis les sources grâce aux outils de build installés ci-dessus.
+# Installer les dépendances core (eurocodepy inclus, structuralcodes EXCLU —
+# voir extra [capacity] si capacity-based design est nécessaire)
 RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -e .
 
 # Image finale — plus légère
-FROM --platform=linux/amd64 python:3.12-slim-bookworm
-
-# Librairies runtime minimales
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libgl1 \
-    libglib2.0-0 \
-    libblas3 \
-    liblapack3 \
-    && rm -rf /var/lib/apt/lists/*
+FROM python:3.12-slim-bookworm
 
 WORKDIR /app
 

@@ -1,7 +1,13 @@
 """Vérification cisaillement EC2 — StructuralCodes capacity-based."""
 
+from fastapi import HTTPException
+
 from eurocode_calculator.schemas.beam import BeamVerifyShearRequest, BeamVerifyShearResponse
-from eurocode_calculator.services.structuralcodes_setup import get_ec2_2004, parse_concrete_fck
+from eurocode_calculator.services.structuralcodes_setup import (
+    STRUCTURALCODES_AVAILABLE,
+    get_ec2_2004,
+    parse_concrete_fck,
+)
 
 
 def verify_beam_shear(request: BeamVerifyShearRequest) -> BeamVerifyShearResponse:
@@ -10,6 +16,16 @@ def verify_beam_shear(request: BeamVerifyShearRequest) -> BeamVerifyShearRespons
 
     Sans étriers : V_Rdc. Avec étriers : min(V_Rds, V_Rd,max).
     """
+    if not STRUCTURALCODES_AVAILABLE:
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "Vérification cisaillement capacity-based indisponible : "
+                "StructuralCodes n'est pas installé. "
+                "Installez l'extra [capacity] : pip install -e '.[capacity]'"
+            ),
+        )
+
     ec2 = get_ec2_2004()
     fck = parse_concrete_fck(request.concrete_grade)
     fcd = fck / request.gamma_c

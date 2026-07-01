@@ -1,20 +1,35 @@
 """Initialisation partagée StructuralCodes (EC2 capacity-based design)."""
 
-from structuralcodes import set_design_code
-from structuralcodes.codes import ec2_2004
-from structuralcodes.geometry import RectangularGeometry, add_reinforcement
-from structuralcodes.materials.concrete import ConcreteEC2_2004
-from structuralcodes.materials.reinforcement import ReinforcementEC2_2004
-from structuralcodes.sections import BeamSection
+try:
+    from structuralcodes import set_design_code
+    from structuralcodes.codes import ec2_2004
+    from structuralcodes.geometry import RectangularGeometry, add_reinforcement
+    from structuralcodes.materials.concrete import ConcreteEC2_2004
+    from structuralcodes.materials.reinforcement import ReinforcementEC2_2004
+    from structuralcodes.sections import BeamSection
+
+    STRUCTURALCODES_AVAILABLE = True
+except ImportError:  # pragma: no cover - cas production sans extra [capacity]
+    STRUCTURALCODES_AVAILABLE = False
 
 # EC2 (2004) — norme supportée par StructuralCodes
 _DESIGN_CODE = "ec2_2004"
 _initialized = False
 
 
+def _raise_if_unavailable() -> None:
+    """Lève une exception explicative si StructuralCodes n'est pas installé."""
+    if not STRUCTURALCODES_AVAILABLE:
+        raise RuntimeError(
+            "StructuralCodes n'est pas installé. "
+            "Installez l'extra [capacity] : pip install -e '.[capacity]'"
+        )
+
+
 def ensure_ec2_design_code() -> None:
     """Configure le code de calcul EC2 une seule fois par processus."""
     global _initialized
+    _raise_if_unavailable()
     if not _initialized:
         set_design_code(_DESIGN_CODE)
         _initialized = True
@@ -25,13 +40,13 @@ def parse_concrete_fck(concrete_grade: str) -> float:
     return float(concrete_grade.upper().replace("C", "").split("/")[0])
 
 
-def create_concrete_material(fck: float) -> ConcreteEC2_2004:
+def create_concrete_material(fck: float) -> "ConcreteEC2_2004":
     """Crée un matériau béton EC2 via StructuralCodes."""
     ensure_ec2_design_code()
     return ConcreteEC2_2004(fck=fck)
 
 
-def create_reinforcement_material(fyk: float = 500.0) -> ReinforcementEC2_2004:
+def create_reinforcement_material(fyk: float = 500.0) -> "ReinforcementEC2_2004":
     """Crée un matériau acier B500B (valeurs EC2 typiques)."""
     ensure_ec2_design_code()
     return ReinforcementEC2_2004(
@@ -50,7 +65,7 @@ def build_rectangular_beam_section(
     bottom_bar_count: int,
     cover_mm: float,
     steel_fyk: float = 500.0,
-) -> BeamSection:
+) -> "BeamSection":
     """
     Construit une section poutre rectangulaire avec armatures inférieures.
 

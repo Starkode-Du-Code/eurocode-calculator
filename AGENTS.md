@@ -28,7 +28,7 @@
 | Validation données | Pydantic v2 | `>=2.10.0` |
 | Configuration | pydantic-settings | `>=2.6.0` |
 | Calculs Eurocode | eurocodepy | `>=2026.4.1` (matériaux, profilés, sols) |
-| Calculs capacity-based | structuralcodes | `>=0.6.0` (EC2 cisaillement, flexion avec armatures) |
+| Calculs capacity-based | structuralcodes | `>=0.6.0` en extra `[capacity]` (EC2 cisaillement, flexion avec armatures) |
 | Fallback / vérification analytique | `src/eurocode_calculator/core` | EC2 béton, EC3 acier/profilés, matériaux |
 | Tests | pytest + httpx + pytest-cov | `>=8.3.0` |
 | Lint / format | Ruff | `>=0.8.0`, line-length 120, cible py312 |
@@ -37,7 +37,7 @@
 | Conteneur | Docker | `python:3.12-slim-bookworm` |
 | Déploiement | Render (recommandé), Railway, Docker | fichiers `render.yaml`, `railway.toml`, `Dockerfile` |
 
-**Remarque sur les dépendances** : `eurocodepy` et `structuralcodes` sont en dépendances core. `eurocodepy` dépend de `triangle` qui peut nécessiter une compilation C/Fortran lors du build Docker ; le Dockerfile multi-stage installe donc `gcc`, `g++`, `gfortran`, `libblas-dev`, `liblapack-dev` pour garantir le build. En complément, le module interne `core` et l'adapter `services/materials_adapter.py` fournissent un fallback robuste si `eurocodepy` venait à ne pas être installable dans un environnement donné.
+**Remarque sur les dépendances** : `eurocodepy` est en dépendance core. `structuralcodes` est en extra `[capacity]` car il dépend de `triangle`, qui n'a pas de wheel pour Linux ARM64 et n'a pas de sdist disponible. Le Dockerfile de production n'installe donc pas `structuralcodes`. Les endpoints capacity-based (`/beam/verify-shear`, `/beam/verify-uls-capacity`) retournent un 503 en production ARM64, mais les endpoints principaux (`/beam/verify-uls`, `/column/buckling`, `/foundation/bearing`) fonctionnent. En local ou sur un builder x86_64, installez `pip install -e ".[dev,capacity]"` pour avoir toutes les fonctionnalités.
 
 ---
 
@@ -56,8 +56,8 @@ src/eurocode_calculator/
 │   └── foundation.py
 ├── services/                # Logique métier Eurocode
 │   ├── beam_service.py              # POST /beam/verify-uls (eurocodepy + core fallback)
-│   ├── beam_shear_service.py        # POST /beam/verify-shear (structuralcodes)
-│   ├── beam_capacity_service.py     # POST /beam/verify-uls-capacity (structuralcodes)
+│   ├── beam_shear_service.py        # POST /beam/verify-shear (structuralcodes, 503 si absent)
+│   ├── beam_capacity_service.py     # POST /beam/verify-uls-capacity (structuralcodes, 503 si absent)
 │   ├── column_service.py            # POST /column/buckling (eurocodepy fyk + formule EC3)
 │   ├── foundation_service.py        # POST /foundation/bearing (données typiques EC7)
 │   ├── materials_adapter.py         # Adapter eurocodepy principal / core fallback
@@ -195,7 +195,7 @@ docker run -p 8000:8000 eurocode-calculator
 - Documenter les hypothèses simplificatrices dans la docstring.
 - Retourner systématiquement un `utilization_ratio` (`M_Ed/M_Rd`, `N_Ed/N_Rd`, `σ_Ed/σ_Rd`).
 - Utiliser `eurocodepy` pour les propriétés matériaux (principal).
-- Utiliser `structuralcodes` pour les vérifications capacity-based avancées.
+- Utiliser `structuralcodes` pour les vérifications capacity-based avancées (installer l'extra `[capacity]`).
 - Utiliser le module interne `core` comme fallback robuste et comme référence analytique pour valider les résultats.
 - Chaque calcul doit être vérifiable contre une solution analytique manuelle ; ajouter le cas de référence dans les tests avec les valeurs attendues.
 
@@ -252,8 +252,8 @@ Fichier `.github/workflows/ci.yml` :
 ### Docker
 
 - Multi-stage build : `python:3.12-slim-bookworm` (builder + runtime).
-- Utilise `uv` comme résolveur/installateur de dépendances.
-- Installe uniquement les dépendances core (pas `dev`, pas `eurocode`).
+- Utilise `pip` pour installer les dépendances core.
+- N'installe pas `structuralcodes` en production (extra `[capacity]`) car sa dépendance `triangle` n'est pas disponible sur ARM64.
 - Image finale plus légère en copiant les site-packages du builder.
 - Expose le port `8000`.
 - Commande par défaut : `uvicorn eurocode_calculator.main:app --host 0.0.0.0 --port 8000`.
