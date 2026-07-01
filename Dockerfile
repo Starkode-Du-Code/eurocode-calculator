@@ -14,15 +14,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-# Installer uv (résolveur Rust ultra-rapide)
-RUN pip install --no-cache-dir uv
-
 # Copier les fichiers de dépendances d'abord (cache Docker optimisé)
 COPY pyproject.toml README.md ./
 COPY src/ src/
 
-# Installer TOUTES les dépendances core (eurocodepy + structuralcodes INCLUS)
-RUN uv pip install --system --no-cache-dir -e .
+# Installer les dépendances avec pip (et non uv) car `triangle` — dépendance d'eurocodepy —
+# n'a pas de wheel précompilée pour toutes les plateformes (ex: Linux ARM64 sur Snap Deploy).
+# pip compile alors triangle depuis les sources grâce aux outils de build installés ci-dessus.
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -e .
 
 # Image finale — plus légère
 FROM python:3.12-slim-bookworm
