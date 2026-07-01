@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM python:3.12-slim-bookworm AS builder
+FROM --platform=linux/amd64 python:3.12-slim-bookworm AS builder
 
 # Outils COMPLETS pour compiler triangle + autres libs C/Fortran
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -25,7 +25,7 @@ RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -e .
 
 # Image finale — plus légère
-FROM python:3.12-slim-bookworm
+FROM --platform=linux/amd64 python:3.12-slim-bookworm
 
 # Librairies runtime minimales
 RUN apt-get update && apt-get install -y --no-install-recommends \
