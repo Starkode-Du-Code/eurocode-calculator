@@ -21,7 +21,7 @@ router = APIRouter(prefix="/beam", tags=["Poutre — EC2"])
     "/verify-uls",
     response_model=BeamVerifyULSResponse,
     summary="Vérification ULS poutre béton (simplifiée)",
-    description="Pré-dimensionnement rapide en flexion simple (EN 1992-1-1, eurocodepy).",
+    description="Pré-dimensionnement rapide en flexion simple (EN 1992-1-1, calcul interne)."
 )
 def post_verify_uls(request: BeamVerifyULSRequest) -> BeamVerifyULSResponse:
     return verify_beam_uls(request)

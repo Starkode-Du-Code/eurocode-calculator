@@ -31,7 +31,7 @@ class BeamVerifyULSResponse(BaseModel):
     message: str
     calculation_method: str = Field(
         default="simplified",
-        description="Méthode : simplified (eurocodepy) ou capacity-based (StructuralCodes)",
+        description="Méthode : simplified (interne) ou capacity-based (StructuralCodes)",
     )
 
 

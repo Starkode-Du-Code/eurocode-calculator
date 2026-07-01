@@ -16,8 +16,8 @@ dependencies = [
     "uvicorn[standard]>=0.32.0",
     "pydantic>=2.10.0",
     "pydantic-settings>=2.6.0",
-    "eurocodepy>=2026.4.1",
     "structuralcodes>=0.6.0",
+    # eurocodepy retiré du core — trop de friction de build
 ]
 
 [project.optional-dependencies]
@@ -26,6 +26,10 @@ dev = [
     "pytest-cov>=6.0.0",
     "httpx>=0.28.0",
     "ruff>=0.8.0",
+]
+# Extra pour tests locaux ou référence — pas en production
+eurocode = [
+    "eurocodepy>=2026.4.1",
 ]
 
 [project.scripts]
@@ -40,7 +44,7 @@ pythonpath = ["src"]
 addopts = "-v --tb=short"
 
 [tool.ruff]
-line-length = 100
+line-length = 120
 target-version = "py312"
 
 [tool.ruff.lint]
